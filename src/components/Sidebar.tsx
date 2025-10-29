@@ -1,44 +1,155 @@
 // src/components/Sidebar.tsx
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { LayoutDashboard, Package } from 'lucide-react'
 
 const Sidebar = () => {
+  const location = useLocation();
+  
+  // Função para verificar se o link está ativo
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
   return (
     <nav style={{ 
-      width: '200px', 
-      height: '100vh', 
-      // --- MUDANÇAS AQUI ---
-      background: '#242424', // Cor escura para combinar
-      borderRight: '1px solid #3a3a3a', // Borda mais escura
-      color: '#ffffff', // Deixa o texto "Gerenciador" branco
-      padding: '1rem',
-      // --- FIM DAS MUDANÇAS ---
+      width: '260px', 
+      minHeight: '100vh', 
+      background: '#1a1a1a',
+      borderRight: '1px solid #2a2a2a',
+      color: '#ffffff',
+      padding: '0',
+      display: 'flex',
+      flexDirection: 'column',
     }}>
-      <h3 style={{ paddingLeft: '0.5rem' }}>Gerenciador</h3>
-      <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
+      {/* Header */}
+      <div style={headerStyle}>
+        <Package size={28} color="#3b82f6" />
+        <h3 style={titleStyle}>Gerenciador de Estoque</h3>
+      </div>
+      
+      {/* Menu */}
+      <ul style={{ 
+        listStyle: 'none', 
+        padding: '1rem 0', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '0.25rem',
+        margin: 0,
+        flex: 1,
+      }}>
         <li>
-          <Link to="/" style={linkStyle}>Dashboard</Link>
+          <Link 
+            to="/" 
+            style={{
+              ...linkStyle,
+              ...(isActive('/') ? activeLinkStyle : {})
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive('/')) {
+                e.currentTarget.style.backgroundColor = '#2a2a2a';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive('/')) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }
+            }}
+          >
+            {isActive('/') && <div style={activeIndicator} />}
+            <LayoutDashboard size={20} style={{ flexShrink: 0 }} />
+            <span>Dashboard</span>
+          </Link>
         </li>
         <li>
-          <Link to="/produtos" style={linkStyle}>Produtos</Link>
+          <Link 
+            to="/produtos" 
+            style={{
+              ...linkStyle,
+              ...(isActive('/produtos') ? activeLinkStyle : {})
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive('/produtos')) {
+                e.currentTarget.style.backgroundColor = '#2a2a2a';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive('/produtos')) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }
+            }}
+          >
+            {isActive('/produtos') && <div style={activeIndicator} />}
+            <Package size={20} style={{ flexShrink: 0 }} />
+            <span>Produtos</span>
+          </Link>
         </li>
-        {/* <li>
-          <Link to="/relatorios" style={linkStyle}>Relatórios</Link>
-        </li> 
-        */}
       </ul>
+
+      {/* Footer (opcional - pode comentar se não quiser) */}
+      <div style={footerStyle}>
+        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+          v1.0.0
+        </div>
+      </div>
     </nav>
   )
 }
 
-// Adicionei um objeto de estilo para os links para garantir
+// Estilos
+const headerStyle: React.CSSProperties = {
+  padding: '1.5rem',
+  borderBottom: '1px solid #2a2a2a',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.75rem',
+};
+
+const titleStyle: React.CSSProperties = {
+  margin: 0,
+  fontSize: '1rem',
+  fontWeight: 600,
+  color: '#e0e0e0',
+};
+
 const linkStyle: React.CSSProperties = {
-  color: '#e0e0e0', // Um cinza-claro para o texto do link
+  color: '#a0a0a0',
   textDecoration: 'none',
-  padding: '0.5rem',
-  display: 'block', // Faz o link ocupar mais espaço
-  borderRadius: '4px'
-}
-// OBS: Você pode adicionar um :hover depois usando CSS
-// .link:hover { background: '#333' }
+  padding: '0.875rem 1.5rem',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.75rem',
+  borderRadius: '0',
+  fontSize: '0.95rem',
+  fontWeight: 500,
+  transition: 'all 0.2s ease',
+  position: 'relative',
+  cursor: 'pointer',
+};
+
+const activeLinkStyle: React.CSSProperties = {
+  backgroundColor: '#2a2a2a',
+  color: '#3b82f6',
+};
+
+const activeIndicator: React.CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  bottom: 0,
+  width: '3px',
+  backgroundColor: '#3b82f6',
+  borderRadius: '0 2px 2px 0',
+};
+
+const footerStyle: React.CSSProperties = {
+  padding: '1rem 1.5rem',
+  borderTop: '1px solid #2a2a2a',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
 
 export default Sidebar

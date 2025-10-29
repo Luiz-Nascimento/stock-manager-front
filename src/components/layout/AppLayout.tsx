@@ -1,14 +1,22 @@
 // src/components/layout/AppLayout.tsx
 import { Outlet } from 'react-router-dom'
-import Sidebar from '../Sidebar' // Vamos criar este componente a seguir
+import Sidebar from '../Sidebar'
 
 const AppLayout = () => {
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ 
+      display: 'flex', 
+      minHeight: '100vh',  // ← ADICIONE
+      width: '100%'        // ← ADICIONE
+    }}>
       <Sidebar />
-      <main style={{ flex: 1, padding: '2rem' }}>
-        {/* O <Outlet /> é o marcador de posição onde o React Router
-            vai renderizar sua página (Dashboard, Produtos, etc.) */}
+      <main style={{ 
+        flex: 1, 
+        padding: '2rem',
+        overflowY: 'auto',     // ← ADICIONE
+        width: '100%',         // ← ADICIONE
+        boxSizing: 'border-box' // ← ADICIONE (importante!)
+      }}>
         <Outlet />
       </main>
     </div>
