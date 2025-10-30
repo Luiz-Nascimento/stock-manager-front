@@ -2,35 +2,28 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, PlusCircle } from 'lucide-react';
 import AddProductModal from '../components/AddProductModal';
-import EditProductModal from '../components/EditProductModal'; // <--- 1. NOVO: Importar o modal de edição
+import EditProductModal from '../components/EditProductModal'; 
 import api from '../lib/api';
+import styles from './Produtos.module.css'; // 1. Importar o CSS Module
 
-// (O tipo Produto continua o mesmo)
 export type Produto = {
   id: number;
   nome: string;
   marca: string;
   preco: number;
   quantidade: number;
-  validade: string; // A API vai retornar, mas não vamos editar
+  validade: string;
 };
 
-// (O tipo NewProductData continua o mesmo)
-type NewProductData = Omit<Produto, 'id'>;
-
-// 2. NOVO: Tipo para os dados de ATUALIZAÇÃO
-// (Baseado no seu DTO 'ProdutoUpdate', sem a validade)
+export type NewProductData = Omit<Produto, 'id'>;
 export type UpdateProductData = Omit<Produto, 'id' | 'validade'>;
 
 const Produtos: React.FC = () => {
   const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // MUDANÇA: Renomeado para clareza
-
-  // 3. NOVO: Estados para o modal de EDIÇÃO
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [produtoEmEdicao, setProdutoEmEdicao] = useState<Produto | null>(null);
 
-  // (O useEffect para buscar produtos continua o mesmo)
   useEffect(() => {
     const fetchProdutos = async () => {
       try {
@@ -43,7 +36,6 @@ const Produtos: React.FC = () => {
     fetchProdutos();
   }, []);
 
-  // (handleSaveProduct renomeado para handleCreateProduct para clareza)
   const handleCreateProduct = async (data: NewProductData) => {
     try {
       const response = await api.post('/produtos', data);
@@ -54,25 +46,19 @@ const Produtos: React.FC = () => {
     }
   };
 
-  // 4. NOVO: Função para salvar a ATUALIZAÇÃO (chama o PUT)
   const handleUpdateProduct = async (id: number, data: UpdateProductData) => {
     try {
-      // Usa o 'api' para fazer a chamada PUT
       const response = await api.put(`/produtos/${id}`, data);
-      
-      // Atualiza a lista de produtos no front-end
       setProdutos(produtos.map(p => 
-        p.id === id ? response.data : p // Substitui o produto antigo pelo novo
+        p.id === id ? response.data : p
       ));
-      
-      setIsEditModalOpen(false); // Fecha o modal de edição
-      setProdutoEmEdicao(null); // Limpa o estado
+      setIsEditModalOpen(false);
+      setProdutoEmEdicao(null);
     } catch (error) {
       console.error("Erro ao ATUALIZAR produto:", error);
     }
   };
 
-  // (handleDeletar continua o mesmo)
   const handleDeletar = async (id: number) => {
     if (!window.confirm("Tem certeza que deseja deletar este produto?")) {
       return;
@@ -85,20 +71,18 @@ const Produtos: React.FC = () => {
     }
   };
   
-  // 5. NOVO: Funções para controlar o modal de EDIÇÃO
   const handleAbrirModalEdicao = (produto: Produto) => {
-    setProdutoEmEdicao(produto); // Define qual produto estamos editando
-    setIsEditModalOpen(true); // Abre o modal
+    setProdutoEmEdicao(produto);
+    setIsEditModalOpen(true);
   };
 
   const handleFecharModalEdicao = (open: boolean) => {
     setIsEditModalOpen(open);
     if (!open) {
-      setProdutoEmEdicao(null); // Limpa o estado ao fechar
+      setProdutoEmEdicao(null);
     }
   };
 
-  // Funções para o modal de ADIÇÃO (renomeadas)
   const handleAbrirModalAdicao = () => {
     setIsAddModalOpen(true);
   };
@@ -106,51 +90,48 @@ const Produtos: React.FC = () => {
     setIsAddModalOpen(open);
   };
 
-
-  return (
-    <div style={{ color: '#e0e0e0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '1.75rem' }}>Lista de Produtos</h2>
+  return (
+    // 2. Usar classes CSS
+    <div className={styles.pageContainer}> 
+      <div className={styles.headerContainer}>
+        <h2 className={styles.headerTitle}>Lista de Produtos</h2>
         <button 
-          onClick={handleAbrirModalAdicao} // MUDANÇA: onClick
-          style={addButtonStyle}
+          onClick={handleAbrirModalAdicao}
+          className={styles.addButtonStyle}
         >
           <PlusCircle size={18} />
           Adicionar Produto
         </button>
       </div>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1.5rem', textAlign: 'left' }}>
+      <table className={styles.table}>
         <thead>
-          <tr style={{ borderBottom: '2px solid #4a4a4a' }}>
-            {/* ... (seus <th> continuam os mesmos) ... */}
-            <th style={thStyle}>Nome</th>
-            <th style={thStyle}>Marca</th>
-            <th style={thStyle}>Preço</th>
-            <th style={thStyle}>Qtd.</th>
-            <th style={thStyle}>Validade</th>
-            <th style={thStyle}>Ações</th>
+          <tr>
+            <th className={styles.thStyle}>Nome</th>
+            <th className={styles.thStyle}>Marca</th>
+            <th className={styles.thStyle}>Preço</th>
+            <th className={styles.thStyle}>Qtd.</th>
+            <th className={styles.thStyle}>Validade</th>
+            <th className={styles.thStyle}>Ações</th>
           </tr>
         </thead>
         <tbody>
           {produtos.map((produto) => (
-            <tr key={produto.id} style={{ borderBottom: '1px solid #3a3a3a' }}>
-              {/* ... (seus <td> de dados continuam os mesmos) ... */}
-              <td style={tdStyle}>{produto.nome}</td>
-              <td style={tdStyle}>{produto.marca}</td>
-              <td style={tdStyle}>R$ {produto.preco.toFixed(2)}</td>
-              <td style={tdStyle}>{produto.quantidade}</td>
-              <td style={tdStyle}>{new Date(produto.validade).toLocaleDateString('pt-BR')}</td>
-              <td style={tdStyle}>
+            <tr key={produto.id}>
+              <td className={styles.tdStyle}>{produto.nome}</td>
+              <td className={styles.tdStyle}>{produto.marca}</td>
+              <td className={styles.tdStyle}>R$ {produto.preco.toFixed(2)}</td>
+              <td className={styles.tdStyle}>{produto.quantidade}</td>
+              <td className={styles.tdStyle}>{new Date(produto.validade).toLocaleDateString('pt-BR')}</td>
+              <td className={styles.tdStyle}>
                 <button 
-                  style={iconButtonStyle}
-                  // 6. MUDANÇA: Chama a função para abrir o modal de edição
+                  className={styles.iconButtonStyle}
                   onClick={() => handleAbrirModalEdicao(produto)}
                 >
                   <Edit size={16} color="#3b82f6" />
                 </button>
                 <button 
-                  style={iconButtonStyle}
+                  className={styles.iconButtonStyle}
                   onClick={() => handleDeletar(produto.id)}
                 >
                   <Trash2 size={16} color="#ef4444" />
@@ -161,53 +142,22 @@ const Produtos: React.FC = () => {
         </tbody>
       </table>
 
-      {/* Modal de ADICIONAR */}
       <AddProductModal 
         open={isAddModalOpen}
         onOpenChange={handleFecharModalAdicao}
         onSave={handleCreateProduct}
       />
 
-      {/* 7. NOVO: Renderiza o modal de EDIÇÃO */}
       <EditProductModal 
         open={isEditModalOpen}
         onOpenChange={handleFecharModalEdicao}
         onSave={handleUpdateProduct}
-        // Passamos o produto selecionado para o modal preencher os campos
         produtoToEdit={produtoEmEdicao} 
       />
     </div>
   );
 };
 
-// (Estilos - Copie e cole seus estilos aqui)
-const addButtonStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.5rem',
-  padding: '0.5rem 1rem',
-  background: '#3b82f6',
-  color: 'white',
-  border: 'none',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontWeight: 600,
-};
-const thStyle: React.CSSProperties = { 
-  padding: '0.75rem 0.5rem',
-  textTransform: 'uppercase',
-  fontSize: '0.75rem',
-  color: '#a0a0a0',
-};
-const tdStyle: React.CSSProperties = { 
-  padding: '1rem 0.5rem',
-  color: '#e0e0e0',
-};
-const iconButtonStyle: React.CSSProperties = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  padding: '0.25rem'
-};
+// 3. Todos os objetos de estilo foram REMOVIDOS daqui
 
 export default Produtos;

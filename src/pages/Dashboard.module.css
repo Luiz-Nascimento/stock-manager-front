@@ -1,0 +1,112 @@
+/* src/pages/Dashboard.module.css */
+
+.pageContainer {
+  color: var(--color-text-secondary);
+}
+
+.loadingBlock,
+.errorBlock {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-tertiary);
+}
+
+.errorBlock {
+  color: var(--color-card-danger-text);
+}
+
+.header {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-text-primary);
+}
+
+.subHeader {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+  color: var(--color-text-primary);
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Estilo de Card Padrão */
+.card {
+  border: 1px solid var(--color-border);
+  background: var(--color-background-component);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+/* Sombra mais forte no modo escuro */
+html.dark .card {
+   box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+/* Card de Alerta (APENAS overrides) */
+.warningCard {
+  background-color: var(--color-card-warning-bg);
+  border-color: var(--color-card-warning-border);
+}
+.warningCard .cardTitle {
+  color: var(--color-card-warning-text);
+}
+.warningCard .cardValue {
+  color: var(--color-card-warning-text);
+}
+
+/* Card de Perigo (APENAS overrides) */
+.dangerCard {
+  background-color: var(--color-card-danger-bg);
+  border-color: var(--color-card-danger-border);
+}
+.dangerCard .cardTitle {
+  color: var(--color-card-danger-text);
+}
+.dangerCard .cardValue {
+  color: var(--color-card-danger-text);
+}
+
+
+.cardTitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.cardValue {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.infoBox {
+  padding: 1rem;
+  background-color: var(--color-background-component-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.infoBoxWarning {
+  composes: infoBox;
+  color: #fbbf24;
+}
+
+.infoBoxDanger {
+  composes: infoBox;
+  color: #ef4444;
+}

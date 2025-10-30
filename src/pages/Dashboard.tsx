@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, TrendingUp, AlertTriangle, DollarSign, Calendar, XCircle } from 'lucide-react';
 import api from '../lib/api';
+import styles from './Dashboard.module.css'; 
 
 interface DashboardStats {
   totalProdutos: number;
@@ -38,10 +39,16 @@ const Dashboard: React.FC = () => {
 
     fetchDashboardStats();
   }, []);
+  
+  // Helper para aplicar classes condicionais
+  const getCardClass = (condition: boolean, style: string) => {
+    return `${styles.card} ${condition ? style : ''}`;
+  };
+
 
   if (loading) {
     return (
-      <div style={{ color: '#e0e0e0', textAlign: 'center', padding: '2rem' }}>
+      <div className={styles.loadingBlock}>
         <p>Carregando dados do dashboard...</p>
       </div>
     );
@@ -49,92 +56,92 @@ const Dashboard: React.FC = () => {
 
   if (error || !stats) {
     return (
-      <div style={{ color: '#ef4444', textAlign: 'center', padding: '2rem' }}>
+      <div className={styles.errorBlock}>
         <p>{error || "Erro ao carregar dados"}</p>
       </div>
     );
   }
 
   return (
-    <div style={{ color: '#e0e0e0' }}>
-      <h2 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>Dashboard</h2>
+    <div className={styles.pageContainer}>
+      <h2 className={styles.header}>Dashboard</h2>
       
       {/* Linha 1: Cards de Métricas Básicas */}
-      <div style={gridContainerStyle}>
+      <div className={styles.gridContainer}>
         
         {/* Total de Produtos */}
-        <div style={cardStyle}>
+        <div className={styles.card}>
           <Package size={24} color="#3b82f6" />
-          <h4 style={cardTitleStyle}>Total de Produtos</h4>
-          <p style={cardValueStyle}>{stats.totalProdutos}</p>
+          <h4 className={styles.cardTitle}>Total de Produtos</h4>
+          <p className={styles.cardValue}>{stats.totalProdutos}</p>
         </div>
 
         {/* Quantidade Total */}
-        <div style={cardStyle}>
+        <div className={styles.card}>
           <TrendingUp size={24} color="#10b981" />
-          <h4 style={cardTitleStyle}>Itens em Estoque</h4>
-          <p style={cardValueStyle}>{stats.quantidadeTotalItens}</p>
+          <h4 className={styles.cardTitle}>Itens em Estoque</h4>
+          <p className={styles.cardValue}>{stats.quantidadeTotalItens}</p>
         </div>
 
         {/* Valor Total */}
-        <div style={cardStyle}>
+        <div className={styles.card}>
           <DollarSign size={24} color="#8b5cf6" />
-          <h4 style={cardTitleStyle}>Valor Total</h4>
-          <p style={cardValueStyle}>R$ {stats.valorTotalEstoque.toFixed(2)}</p>
+          <h4 className={styles.cardTitle}>Valor Total</h4>
+          <p className={styles.cardValue}>R$ {stats.valorTotalEstoque.toFixed(2)}</p>
         </div>
 
         {/* Total de Marcas */}
-        <div style={cardStyle}>
+        <div className={styles.card}>
           <Package size={24} color="#06b6d4" />
-          <h4 style={cardTitleStyle}>Marcas</h4>
-          <p style={cardValueStyle}>{stats.totalMarcas}</p>
+          <h4 className={styles.cardTitle}>Marcas</h4>
+          <p className={styles.cardValue}>{stats.totalMarcas}</p>
         </div>
       </div>
 
       {/* Linha 2: Cards de Alertas */}
-      <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', marginTop: '2rem' }}>Alertas</h3>
-      <div style={gridContainerStyle}>
+      <h3 className={styles.subHeader}>Alertas</h3>
+      <div className={styles.gridContainer}>
         
         {/* Estoque Baixo */}
-        <div style={stats.produtosEstoqueBaixo > 0 ? warningCardStyle : cardStyle}>
+        <div className={getCardClass(stats.produtosEstoqueBaixo > 0, styles.warningCard)}>
           <AlertTriangle size={24} color={stats.produtosEstoqueBaixo > 0 ? "#facc15" : "#a0a0a0"} />
-          <h4 style={{...cardTitleStyle, color: stats.produtosEstoqueBaixo > 0 ? '#b45309' : '#a0a0a0'}}>
+          <h4 className={styles.cardTitle}>
             Estoque Baixo
           </h4>
-          <p style={{...cardValueStyle, color: stats.produtosEstoqueBaixo > 0 ? '#d97706' : '#e0e0e0'}}>
+          <p className={styles.cardValue}>
             {stats.produtosEstoqueBaixo}
           </p>
         </div>
 
         {/* Em Falta */}
-        <div style={stats.produtosEmFalta > 0 ? dangerCardStyle : cardStyle}>
+        <div className={getCardClass(stats.produtosEmFalta > 0, styles.dangerCard)}>
           <XCircle size={24} color={stats.produtosEmFalta > 0 ? "#ef4444" : "#a0a0a0"} />
-          <h4 style={{...cardTitleStyle, color: stats.produtosEmFalta > 0 ? '#991b1b' : '#a0a0a0'}}>
+          <h4 className={styles.cardTitle}>
             Em Falta
           </h4>
-          <p style={{...cardValueStyle, color: stats.produtosEmFalta > 0 ? '#dc2626' : '#e0e0e0'}}>
+          <p className={styles.cardValue}>
             {stats.produtosEmFalta}
           </p>
         </div>
 
         {/* Vencidos */}
-        <div style={stats.produtosVencidos > 0 ? dangerCardStyle : cardStyle}>
+        <div className={getCardClass(stats.produtosVencidos > 0, styles.dangerCard)}>
           <Calendar size={24} color={stats.produtosVencidos > 0 ? "#ef4444" : "#a0a0a0"} />
-          <h4 style={{...cardTitleStyle, color: stats.produtosVencidos > 0 ? '#991b1b' : '#a0a0a0'}}>
+          <h4 className={styles.cardTitle}>
             Vencidos
           </h4>
-          <p style={{...cardValueStyle, color: stats.produtosVencidos > 0 ? '#dc2626' : '#e0e0e0'}}>
+          <p className={styles.cardValue}>
             {stats.produtosVencidos}
           </p>
         </div>
 
         {/* Vencendo em 7 dias */}
-        <div style={stats.produtosVencendo7Dias > 0 ? warningCardStyle : cardStyle}>
+        <div className={getCardClass(stats.produtosVencendo7Dias > 0, styles.warningCard)}>
           <Calendar size={24} color={stats.produtosVencendo7Dias > 0 ? "#facc15" : "#a0a0a0"} />
-          <h4 style={{...cardTitleStyle, color: stats.produtosVencendo7Dias > 0 ? '#b45309' : '#a0a0a0'}}>
+          <h4 className={styles.cardTitle}>
             Vencendo (7 dias)
           </h4>
-          <p style={{...cardValueStyle, color: stats.produtosVencendo7Dias > 0 ? '#d97706' : '#e0e0e0'}}>
+          <p className={styles.cardValue}>
             {stats.produtosVencendo7Dias}
           </p>
         </div>
@@ -142,77 +149,22 @@ const Dashboard: React.FC = () => {
 
       {/* Linha 3: Informações Adicionais */}
       {stats.produtosVencendo30Dias > 0 && (
-        <div style={{ ...infoBoxStyle, marginTop: '2rem' }}>
-          <p style={{ margin: 0, color: '#fbbf24' }}>
+        <div className={`${styles.infoBox} ${styles.infoBoxWarning}`} style={{ marginTop: '2rem' }}>
+          <p style={{ margin: 0 }}>
             ⚠️ <strong>{stats.produtosVencendo30Dias}</strong> produtos vencendo nos próximos 30 dias
           </p>
         </div>
       )}
 
       {stats.valorEmRisco > 0 && (
-        <div style={{ ...infoBoxStyle, marginTop: '1rem' }}>
-          <p style={{ margin: 0, color: '#ef4444' }}>
+        <div className={`${styles.infoBox} ${styles.infoBoxDanger}`} style={{ marginTop: '1rem' }}>
+          <p style={{ margin: 0 }}>
             🚨 Valor em risco (produtos vencidos): <strong>R$ {stats.valorEmRisco.toFixed(2)}</strong>
           </p>
         </div>
       )}
     </div>
   );
-};
-
-// Estilos
-
-// NOVO: Container Grid responsivo
-const gridContainerStyle: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', // Magia aqui! 🎯
-  gap: '1rem',
-  marginBottom: '1rem',
-};
-
-const cardStyle: React.CSSProperties = {
-  border: '1px solid #3a3a3a',
-  background: '#242424',
-  borderRadius: '8px',
-  padding: '1.5rem',
-  boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
-  color: '#e0e0e0',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.5rem',
-};
-
-const warningCardStyle: React.CSSProperties = {
-  ...cardStyle,
-  backgroundColor: '#fffbe6',
-  borderColor: '#fde047',
-};
-
-const dangerCardStyle: React.CSSProperties = {
-  ...cardStyle,
-  backgroundColor: '#fee2e2',
-  borderColor: '#fca5a5',
-};
-
-const cardTitleStyle: React.CSSProperties = {
-  margin: 0,
-  fontSize: '0.875rem',
-  color: '#a0a0a0',
-  textTransform: 'uppercase',
-  fontWeight: 500,
-};
-
-const cardValueStyle: React.CSSProperties = {
-  margin: 0,
-  fontSize: '1.5rem',
-  fontWeight: 700,
-};
-
-const infoBoxStyle: React.CSSProperties = {
-  padding: '1rem',
-  backgroundColor: '#242424',
-  border: '1px solid #3a3a3a',
-  borderRadius: '8px',
 };
 
 export default Dashboard;

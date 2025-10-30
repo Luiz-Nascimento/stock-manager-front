@@ -1,0 +1,97 @@
+/* src/components/Sidebar.module.css */
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--color-background-sidebar);
+  border-right: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.menu {
+  list-style: none;
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  flex: 1;
+}
+
+.link {
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  padding: 0.875rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.link:hover {
+  background-color: var(--color-background-component-alt);
+}
+
+.linkActive {
+  background-color: var(--color-background-component-alt);
+  color: #3b82f6; /* A cor ativa pode ser fixa */
+}
+
+.activeIndicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: #3b82f6;
+  border-radius: 0 2px 2px 0;
+}
+
+.footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footerVersion {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+
+.toggleButton {
+  background: var(--color-background-input);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.toggleButton:hover {
+  border-color: var(--color-text-tertiary);
+}
