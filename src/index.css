@@ -22,7 +22,7 @@
   --color-background-input: #ffffff;
   --color-border: #e5e7eb;
   --color-border-heavy: #d1d5db;
-  
+
   /* Cores de Alerta (Claro) */
   --color-card-warning-bg: #fffbe6;
   --color-card-warning-border: #fde047;
@@ -46,8 +46,8 @@ html.dark {
   --color-border: #3a3a3a;
   --color-border-heavy: #4a4a4a;
 
-  /* Cores de Alerta (Escuro) - podem ser iguais ou diferentes */
-  --color-card-warning-bg: #3a3a3a; 
+  /* Cores de Alerta (Escuro) */
+  --color-card-warning-bg: #3a3a3a;
   --color-card-warning-border: #facc15;
   --color-card-warning-text: #d97706;
   --color-card-danger-bg: #3a3a3a;
@@ -64,36 +64,141 @@ body {
   color: var(--color-text-primary);
 }
 
-/* 4. Atualize seus estilos de modal (que já usam classes!) */
+/* ================================== */
+/* Estilos do Modal (COMPLETOS)      */
+/* ================================== */
+
+/* O fundo preto semi-transparente */
 .DialogOverlay {
   background-color: rgba(0, 0, 0, 0.7);
-  /* ... */
+  position: fixed;
+  inset: 0; /* Equivalente a top: 0; right: 0; bottom: 0; left: 0; */
+  z-index: 10; /* Garante que fique sobre o conteúdo */
+  /* Animação opcional */
+  animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* A janela do modal */
 .DialogContent {
-  background-color: var(--color-background-component-alt); /* <- MUDOU */
-  color: var(--color-text-secondary); /* <- MUDOU */
+  background-color: var(--color-background-component-alt); /* Usa variável */
+  color: var(--color-text-secondary); /* Usa variável */
   border-radius: 8px;
-  /* ... */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  max-width: 450px; /* Ajuste conforme necessário */
+  padding: 1.5rem;
+  z-index: 20; /* Garante que fique sobre o overlay */
+  /* Animação opcional */
+  animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .DialogTitle {
-  color: var(--color-text-primary); /* <- MUDOU */
-  /* ... */
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary); /* Usa variável */
 }
 
-/* ... etc ... */
+.DialogDescription {
+  margin: 0.5rem 0 1.25rem;
+  font-size: 0.9rem;
+  color: var(--color-text-tertiary); /* Usa variável */
+}
+
+/* Formulário dentro do modal */
+.ModalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.Fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: none;
+  padding: 0;
+}
 
 .Label {
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--color-text-secondary); /* <- MUDOU */
+  color: var(--color-text-secondary); /* Usa variável */
 }
 
 .Input {
-  /* ... */
-  border: 1px solid var(--color-border-heavy); /* <- MUDOU */
-  background-color: var(--color-background-input); /* <- MUDOU */
-  color: var(--color-text-primary); /* <- MUDOU */
-  /* ... */
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-border-heavy); /* Usa variável */
+  background-color: var(--color-background-input); /* Usa variável */
+  color: var(--color-text-primary); /* Usa variável */
+  border-radius: 6px;
+  box-sizing: border-box;
 }
+/* Estilo para input desabilitado */
+.Input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* Botões */
+.Button {
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.Button.primary {
+  background-color: #3b82f6; /* Cor primária fixa */
+  color: white;
+}
+.Button.secondary {
+  background-color: var(--color-border-heavy); /* Usa variável */
+  color: var(--color-text-secondary); /* Usa variável */
+}
+/* Estilo para botão desabilitado */
+.Button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Botão de Fechar (X) */
+.IconButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary); /* Usa variável */
+  cursor: pointer;
+}
+.IconButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Animações (opcional) */
+@keyframes overlayShow {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes contentShow {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* REMOVA OU COMENTE OS ESTILOS ANTIGOS ABAIXO SE AINDA EXISTIREM */
+/*
+a { ... }
+h1 { ... }
+button { ... }
+@media (prefers-color-scheme: light) { ... }
+*/

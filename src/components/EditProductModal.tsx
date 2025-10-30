@@ -4,18 +4,21 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import type { UpdateProductData, Produto } from '../pages/Produtos';
 
+// 1. ATUALIZAR AS PROPS AQUI
 interface EditProductModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (id: number, data: UpdateProductData) => void;
+  onSave: (id: number, data: UpdateProductData) => Promise<void>; // Corrigido para Promise<void>
   produtoToEdit: Produto | null;
+  isSubmitting: boolean; // <--- ESTA LINHA FOI ADICIONADA
 }
 
 const EditProductModal: React.FC<EditProductModalProps> = ({ 
   open, 
   onOpenChange, 
   onSave, 
-  produtoToEdit 
+  produtoToEdit,
+  isSubmitting // 2. Receber a prop
 }) => {
   const [nome, setNome] = useState('');
   const [marca, setMarca] = useState('');
@@ -48,7 +51,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        {/* 1. Usando classes CSS do index.css */}
         <Dialog.Overlay className="DialogOverlay" />
         <Dialog.Content className="DialogContent">
           
@@ -67,6 +69,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                 onChange={(e) => setNome(e.target.value)}
                 className="Input" 
                 required 
+                disabled={isSubmitting}
               />
             </fieldset>
 
@@ -78,6 +81,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                 onChange={(e) => setMarca(e.target.value)}
                 className="Input" 
                 required 
+                disabled={isSubmitting}
               />
             </fieldset>
 
@@ -93,6 +97,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                   onChange={(e) => setPreco(Number(e.target.value))}
                   className="Input" 
                   required 
+                  disabled={isSubmitting}
                 />
               </fieldset>
               <fieldset className="Fieldset" style={{ flex: 1 }}>
@@ -105,22 +110,25 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                   onChange={(e) => setQuantidade(Number(e.target.value))}
                   className="Input" 
                   required 
+                  disabled={isSubmitting}
                 />
               </fieldset>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 25, gap: '1rem' }}>
               <Dialog.Close asChild>
-                <button type="button" className="Button secondary">Cancelar</button>
+                <button type="button" className="Button secondary" disabled={isSubmitting}>
+                  Cancelar
+                </button>
               </Dialog.Close>
-              <button type="submit" className="Button primary">
-                Salvar Alterações
+              <button type="submit" className="Button primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
               </button>
             </div>
           </form>
 
           <Dialog.Close asChild>
-            <button className="IconButton" aria-label="Fechar">
+            <button className="IconButton" aria-label="Fechar" disabled={isSubmitting}>
               <X size={16} />
             </button>
           </Dialog.Close>
@@ -130,7 +138,5 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
     </Dialog.Root>
   );
 };
-
-// 2. Todos os objetos de estilo foram REMOVIDOS daqui
 
 export default EditProductModal;
