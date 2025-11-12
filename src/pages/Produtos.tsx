@@ -1,12 +1,14 @@
 // src/pages/Produtos.tsx
-import React, { useState, useEffect, useMemo } from 'react'; // 1. Importar useMemo
-import { Edit, Trash2, PlusCircle, Loader2, Search } from 'lucide-react'; // 2. Importar Search
+import React, { useState, useEffect, useMemo } from 'react';
+// 1. Importar useSearchParams
+import { useSearchParams } from 'react-router-dom'; 
+import { Edit, Trash2, PlusCircle, Loader2, Search } from 'lucide-react';
 import AddProductModal from '../components/AddProductModal';
 import EditProductModal from '../components/EditProductModal';
 import api from '../lib/api';
 import styles from './Produtos.module.css';
 
-// ... (Tipos Produto, NewProductData, UpdateProductData não mudam) ...
+// ... (Tipos Produto não mudam) ...
 export type Produto = {
   id: number;
   nome: string;
@@ -19,6 +21,7 @@ export type Produto = {
 export type NewProductData = Omit<Produto, 'id'>;
 export type UpdateProductData = Omit<Produto, 'id' | 'validade'>;
 
+
 const Produtos: React.FC = () => {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -26,30 +29,46 @@ const Produtos: React.FC = () => {
   const [produtoEmEdicao, setProdutoEmEdicao] = useState<Produto | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
-  
-  // 3. NOVO ESTADO PARA A BUSCA
   const [termoBusca, setTermoBusca] = useState('');
+  
+  // 2. Hook para ler os parâmetros da URL
+  const [searchParams] = useSearchParams();
+  const filtroUrl = searchParams.get('filtro'); // Pega o valor de ?filtro=...
 
+  // 3. Modificar o useEffect para usar o filtro
   useEffect(() => {
-    // ... (fetchProdutos não muda) ...
     const fetchProdutos = async () => {
       try {
-        const response = await api.get('/produtos');
+        let url = '/produtos';
+        
+        // Se um filtro veio da URL, usa o endpoint filtrado
+        if (filtroUrl) {
+          url = `/produtos?filtro=${filtroUrl}`;
+          // Opcional: Desabilita a busca manual se estiver vendo um filtro
+          // setTermoBusca(''); 
+        }
+        
+        const response = await api.get(url);
         setProdutos(response.data);
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
       }
     };
+    
     fetchProdutos();
-  }, []);
+  }, [filtroUrl]); // 4. Adiciona filtroUrl como dependência (para re-buscar se o filtro mudar)
 
-  // ... (Funções de API não mudam) ...
+  // ... (Funções de API: handleCreateProduct, handleUpdateProduct, handleDeletar não mudam) ...
   const handleCreateProduct = async (data: NewProductData) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       const response = await api.post('/produtos', data);
-      setProdutos(prev => [...prev, response.data]);
+      // Atualiza a lista (idealmente, deveria re-chamar fetchProdutos se estiver numa lista filtrada)
+      // Por simplicidade, apenas adicionamos
+      if (!filtroUrl) {
+        setProdutos(prev => [...prev, response.data]);
+      }
       setIsAddModalOpen(false);
     } catch (error) {
       console.error("Erro ao salvar produto:", error);
@@ -88,6 +107,8 @@ const Produtos: React.FC = () => {
       setDeletingProductId(null);
     }
   };
+
+  // ... (Funções de Modal não mudam) ...
   const handleAbrirModalEdicao = (produto: Produto) => {
     if (isSubmitting || deletingProductId !== null) return;
     setProdutoEmEdicao(produto);
@@ -98,15 +119,19 @@ const Produtos: React.FC = () => {
     setIsAddModalOpen(true);
   };
 
-  // 4. LÓGICA DE FILTRAGEM
-  // useMemo evita que o filtro rode a cada renderização, só quando produtos ou termoBusca mudam
+
+  // ... (lógica de produtosFiltrados (busca) não muda) ...
   const produtosFiltrados = useMemo(() => {
     const buscaLower = termoBusca.toLowerCase();
     
-    if (!buscaLower) {
-      return produtos; // Retorna todos se a busca estiver vazia
+    // Se estivermos vendo um filtro da URL, a busca manual não se aplica
+    if (filtroUrl) {
+      return produtos;
     }
 
+    if (!buscaLower) {
+      return produtos; 
+    }
     return produtos.filter(produto => {
       return (
         produto.nome.toLowerCase().includes(buscaLower) ||
@@ -114,14 +139,29 @@ const Produtos: React.FC = () => {
         produto.categoria.toLowerCase().includes(buscaLower)
       );
     });
-  }, [produtos, termoBusca]);
+  }, [produtos, termoBusca, filtroUrl]); // Adicionado filtroUrl
+
+  
+  // 5. NOVO: Helper para mostrar um título baseado no filtro
+  const getTituloPagina = () => {
+    if (!filtroUrl) return "Lista de Produtos";
+    switch (filtroUrl) {
+      case "VENCIDOS": return "Produtos Vencidos";
+      case "VENCENDO_7_DIAS": return "Produtos Vencendo em 7 Dias";
+      case "ESTOQUE_BAIXO": return "Produtos com Estoque Baixo";
+      case "EM_FALTA": return "Produtos em Falta";
+      default: return "Lista de Produtos";
+    }
+  };
 
 
   // --- Renderização ---
   return (
     <div className={styles.pageContainer}>
       <div className={styles.headerContainer}>
-        <h2 className={styles.headerTitle}>Lista de Produtos</h2>
+        {/* 6. Título da página agora é dinâmico */}
+        <h2 className={styles.headerTitle}>{getTituloPagina()}</h2>
+        
         <button
           onClick={handleAbrirModalAdicao}
           className={styles.addButtonStyle}
@@ -132,19 +172,20 @@ const Produtos: React.FC = () => {
         </button>
       </div>
 
-      {/* 5. CAMPO DE BUSCA ADICIONADO AQUI */}
-      <div className={styles.searchContainer}>
-        <Search size={18} className={styles.searchIcon} />
-        <input 
-          type="text"
-          placeholder="Buscar por nome, marca ou categoria..."
-          className={styles.searchInput}
-          value={termoBusca}
-          onChange={e => setTermoBusca(e.target.value)}
-          disabled={isSubmitting || deletingProductId !== null}
-        />
-      </div>
-
+      {/* 7. Esconde a barra de busca se estivermos vendo um filtro */}
+      {!filtroUrl && (
+        <div className={styles.searchContainer}>
+          <Search size={18} className={styles.searchIcon} />
+          <input 
+            type="text"
+            placeholder="Buscar por nome, marca ou categoria..."
+            className={styles.searchInput}
+            value={termoBusca}
+            onChange={e => setTermoBusca(e.target.value)}
+            disabled={isSubmitting || deletingProductId !== null}
+          />
+        </div>
+      )}
 
       <table className={styles.table}>
         <thead>
@@ -159,7 +200,7 @@ const Produtos: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {/* 6. Mapeia os PRODUTOS FILTRADOS em vez da lista completa */}
+          {/* ... (mapeamento de produtosFiltrados não muda) ... */}
           {produtosFiltrados.map((produto) => {
             const isDeleting = deletingProductId === produto.id;
             return (
@@ -203,11 +244,17 @@ const Produtos: React.FC = () => {
         </tbody>
       </table>
       
-      {/* Exibe mensagem se o filtro não retornar nada */}
-      {produtosFiltrados.length === 0 && termoBusca.length > 0 && (
+      {/* 8. Mensagem de "lista vazia" agora considera o filtro da URL */}
+      {produtosFiltrados.length === 0 && filtroUrl && (
+         <p className={styles.emptySearch}>Nenhum produto encontrado para o filtro: {getTituloPagina()}.</p>
+      )}
+
+      {/* Mensagem de "busca vazia" */}
+      {produtosFiltrados.length === 0 && !filtroUrl && termoBusca.length > 0 && (
         <p className={styles.emptySearch}>Nenhum produto encontrado para "{termoBusca}".</p>
       )}
 
+      {/* ... (Modais não mudam) ... */}
       <AddProductModal
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}

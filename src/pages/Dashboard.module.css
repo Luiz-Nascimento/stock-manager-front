@@ -102,11 +102,13 @@ html.dark .card {
 }
 
 .infoBoxWarning {
-  composes: infoBox;
   color: #fbbf24;
 }
 
 .infoBoxDanger {
-  composes: infoBox;
   color: #ef4444;
+}
+
+.gridContainer a {
+  text-decoration: none;
 }
