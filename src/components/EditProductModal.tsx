@@ -4,26 +4,49 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import type { UpdateProductData, Produto } from '../pages/Produtos';
 
-// 1. ATUALIZAR AS PROPS AQUI
 interface EditProductModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (id: number, data: UpdateProductData) => Promise<void>; // Corrigido para Promise<void>
+  onSave: (id: number, data: UpdateProductData) => Promise<void>;
   produtoToEdit: Produto | null;
-  isSubmitting: boolean; // <--- ESTA LINHA FOI ADICIONADA
+  isSubmitting: boolean;
 }
+
+// NOVO: Mapeamento das categorias (Chave: ENUM, Valor: Label)
+const categorias = {
+  'ALIMENTICIO': 'Alimentício',
+  'BEBIDAS': 'Bebidas',
+  'ELETRONICO': 'Eletrônico',
+  'DECORACAO': 'Decoração',
+  'HIGIENE_PESSOAL': 'Higiene Pessoal',
+  'LIMPEZA': 'Limpeza',
+  'ESCRITORIO': 'Escritório',
+  'FERRAMENTAS': 'Ferramentas',
+  'OUTROS': 'Outros'
+};
+
+// NOVO: Helper para encontrar a chave (ALIMENTICIO) a partir da descrição (Alimentício)
+const getChaveDaDescricao = (descricao: string) => {
+  // Object.entries(categorias) === [['ALIMENTICIO', 'Alimentício'], ...]
+  const entry = Object.entries(categorias).find(
+    ([chave, label]) => label.toLowerCase() === descricao.toLowerCase()
+  );
+  return entry ? entry[0] : 'OUTROS'; // Retorna a chave (ex: 'ALIMENTICIO') ou 'OUTROS'
+};
+
 
 const EditProductModal: React.FC<EditProductModalProps> = ({ 
   open, 
   onOpenChange, 
   onSave, 
   produtoToEdit,
-  isSubmitting // 2. Receber a prop
+  isSubmitting
 }) => {
   const [nome, setNome] = useState('');
   const [marca, setMarca] = useState('');
   const [preco, setPreco] = useState(0);
   const [quantidade, setQuantidade] = useState(0);
+  const [categoria, setCategoria] = useState('ALIMENTICIO'); // <-- ADICIONADO
 
   useEffect(() => {
     if (produtoToEdit) {
@@ -31,6 +54,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
       setMarca(produtoToEdit.marca);
       setPreco(produtoToEdit.preco);
       setQuantidade(produtoToEdit.quantidade);
+      // NOVO: Define o <select> usando a descrição para achar a chave
+      setCategoria(getChaveDaDescricao(produtoToEdit.categoria));
     }
   }, [produtoToEdit]); 
 
@@ -41,6 +66,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
     const data: UpdateProductData = {
       nome,
       marca,
+      categoria, // <-- ADICIONADO
       preco: Number(preco),
       quantidade: Number(quantidade)
     };
@@ -82,7 +108,28 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                 className="Input" 
                 required 
                 disabled={isSubmitting}
+                pattern=".*[a-zA-Z].*" // VALIDAÇÃO: Impede apenas números
+                title="A marca deve conter pelo menos uma letra."
               />
+            </fieldset>
+
+            {/* NOVO CAMPO DE CATEGORIA */}
+            <fieldset className="Fieldset">
+              <label className="Label" htmlFor="edit-categoria">Categoria</label>
+              <select 
+                className="Input" 
+                id="edit-categoria" 
+                value={categoria} 
+                onChange={e => setCategoria(e.target.value)} 
+                required 
+                disabled={isSubmitting}
+              >
+                {Object.entries(categorias).map(([valorEnum, label]) => (
+                  <option key={valorEnum} value={valorEnum}>
+                    {label}
+                  </option>
+                ))}
+              </select>
             </fieldset>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
@@ -92,7 +139,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                   id="edit-preco" 
                   type="number" 
                   step="0.01" 
-                  min="0"
+                  min="0" // VALIDAÇÃO: Impede negativos
                   value={preco}
                   onChange={(e) => setPreco(Number(e.target.value))}
                   className="Input" 
@@ -105,7 +152,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                 <input 
                   id="edit-quantidade" 
                   type="number" 
-                  min="0"
+                  min="0" // VALIDAÇÃO: Impede negativos
+                  step="1" // VALIDAÇÃO: Garante inteiros
                   value={quantidade}
                   onChange={(e) => setQuantidade(Number(e.target.value))}
                   className="Input" 

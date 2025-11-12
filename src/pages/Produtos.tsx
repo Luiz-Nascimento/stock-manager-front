@@ -1,12 +1,12 @@
 // src/pages/Produtos.tsx
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, PlusCircle, Loader2 } from 'lucide-react'; // Importar Loader2 (ou outro ícone de loading)
+import { Edit, Trash2, PlusCircle, Loader2 } from 'lucide-react'; 
 import AddProductModal from '../components/AddProductModal';
 import EditProductModal from '../components/EditProductModal';
 import api from '../lib/api';
 import styles from './Produtos.module.css';
 
-// ... (Tipos Produto, NewProductData, UpdateProductData) ...
+// 1. ATUALIZAR TIPOS AQUI
 export type Produto = {
   id: number;
   nome: string;
@@ -14,9 +14,15 @@ export type Produto = {
   preco: number;
   quantidade: number;
   validade: string;
+  categoria: string; // <-- ADICIONADO
 };
-export type NewProductData = Omit<Produto, 'id'>;
-export type UpdateProductData = Omit<Produto, 'id' | 'validade'>;
+
+// Omit<> agora pega 'categoria' automaticamente
+export type NewProductData = Omit<Produto, 'id'>; 
+
+// Omit<> agora pega 'categoria' automaticamente
+export type UpdateProductData = Omit<Produto, 'id' | 'validade'>; 
+
 
 const Produtos: React.FC = () => {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -24,11 +30,9 @@ const Produtos: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [produtoEmEdicao, setProdutoEmEdicao] = useState<Produto | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // 1. NOVO ESTADO: ID do produto sendo deletado
   const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
 
   useEffect(() => {
-    // ... (fetchProdutos não muda) ...
     const fetchProdutos = async () => {
       try {
         const response = await api.get('/produtos');
@@ -42,10 +46,10 @@ const Produtos: React.FC = () => {
 
   // --- Funções de API ---
   const handleCreateProduct = async (data: NewProductData) => {
-    // ... (lógica não muda) ...
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
+      // O 'data' agora inclui 'categoria' vindo do modal
       const response = await api.post('/produtos', data);
       setProdutos(prev => [...prev, response.data]);
       setIsAddModalOpen(false);
@@ -57,10 +61,10 @@ const Produtos: React.FC = () => {
   };
 
   const handleUpdateProduct = async (id: number, data: UpdateProductData) => {
-     // ... (lógica não muda) ...
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
+      // O 'data' agora inclui 'categoria' vindo do modal
       const response = await api.put(`/produtos/${id}`, data);
       setProdutos(prev => prev.map(p => (p.id === id ? response.data : p)));
       setIsEditModalOpen(false);
@@ -72,53 +76,46 @@ const Produtos: React.FC = () => {
     }
   };
 
-  // 2. ATUALIZAR HANDLE DELETE
+  // ... (handleDeletar não muda) ...
   const handleDeletar = async (id: number) => {
-    // Não iniciar novo delete se um já estiver em andamento
     if (isSubmitting || deletingProductId !== null) return;
-
     if (!window.confirm("Tem certeza que deseja deletar este produto?")) {
       return;
     }
-    setIsSubmitting(true); // Ainda desabilita outros botões
-    setDeletingProductId(id); // Marca qual ID está sendo deletado
+    setIsSubmitting(true); 
+    setDeletingProductId(id); 
 
     try {
       await api.delete(`/produtos/${id}`);
-      // Remove o produto da lista APENAS APÓS sucesso da API
       setProdutos(prev => prev.filter(p => p.id !== id));
     } catch (error) {
       console.error("Erro ao deletar produto:", error);
-      // TODO: Mostrar feedback de erro
     } finally {
-      setIsSubmitting(false); // Reabilita outros botões
-      setDeletingProductId(null); // Limpa o ID em deleção
+      setIsSubmitting(false);
+      setDeletingProductId(null); 
     }
   };
 
-
-  // --- Funções de controle do Modal (não mudam) ---
+  // ... (Funções de controle do Modal não mudam) ...
   const handleAbrirModalEdicao = (produto: Produto) => {
     if (isSubmitting || deletingProductId !== null) return;
     setProdutoEmEdicao(produto);
     setIsEditModalOpen(true);
   };
-
   const handleAbrirModalAdicao = () => {
     if (isSubmitting || deletingProductId !== null) return;
     setIsAddModalOpen(true);
   };
 
+
   // --- Renderização ---
   return (
     <div className={styles.pageContainer}>
-      {/* ... (Header não muda) ... */}
       <div className={styles.headerContainer}>
         <h2 className={styles.headerTitle}>Lista de Produtos</h2>
         <button
           onClick={handleAbrirModalAdicao}
           className={styles.addButtonStyle}
-          // Desabilitar se estiver submetendo OU deletando
           disabled={isSubmitting || deletingProductId !== null}
         >
           <PlusCircle size={18} />
@@ -128,11 +125,11 @@ const Produtos: React.FC = () => {
 
 
       <table className={styles.table}>
-        {/* ... (thead não muda) ... */}
         <thead>
           <tr>
             <th className={styles.thStyle}>Nome</th>
             <th className={styles.thStyle}>Marca</th>
+            <th className={styles.thStyle}>Categoria</th> {/* <-- ADICIONADO */}
             <th className={styles.thStyle}>Preço</th>
             <th className={styles.thStyle}>Qtd.</th>
             <th className={styles.thStyle}>Validade</th>
@@ -141,30 +138,26 @@ const Produtos: React.FC = () => {
         </thead>
         <tbody>
           {produtos.map((produto) => {
-            // 3. Verifica se esta linha está sendo deletada
             const isDeleting = deletingProductId === produto.id;
             return (
-              // Aplica uma classe ou estilo inline se estiver deletando
               <tr
                 key={produto.id}
-                style={{ opacity: isDeleting ? 0.5 : 1, transition: 'opacity 0.3s ease-out' }} // Exemplo com opacidade
-                // Ou adicione uma classe: className={isDeleting ? styles.deletingRow : ''}
+                style={{ opacity: isDeleting ? 0.5 : 1, transition: 'opacity 0.3s ease-out' }} 
               >
                 <td className={styles.tdStyle}>{produto.nome}</td>
                 <td className={styles.tdStyle}>{produto.marca}</td>
+                <td className={styles.tdStyle}>{produto.categoria}</td> {/* <-- ADICIONADO */}
                 <td className={styles.tdStyle}>R$ {produto.preco.toFixed(2)}</td>
                 <td className={styles.tdStyle}>{produto.quantidade}</td>
                 <td className={styles.tdStyle}>{new Date(produto.validade).toLocaleDateString('pt-BR')}</td>
                 <td className={styles.tdStyle}>
-                  {/* Mostrar ícone de loading OU os botões */}
                   {isDeleting ? (
-                    <Loader2 size={16} className={styles.spinner} /> // Adicione uma classe CSS para animação de giro
+                    <Loader2 size={16} className={styles.spinner} /> 
                   ) : (
                     <>
                       <button
                         className={styles.iconButtonStyle}
                         onClick={() => handleAbrirModalEdicao(produto)}
-                        // Desabilitar se estiver submetendo OU deletando QUALQUER item
                         disabled={isSubmitting || deletingProductId !== null}
                         aria-label={`Editar ${produto.nome}`}
                       >
@@ -173,7 +166,6 @@ const Produtos: React.FC = () => {
                       <button
                         className={styles.iconButtonStyle}
                         onClick={() => handleDeletar(produto.id)}
-                         // Desabilitar se estiver submetendo OU deletando QUALQUER item
                         disabled={isSubmitting || deletingProductId !== null}
                         aria-label={`Deletar ${produto.nome}`}
                       >
@@ -191,13 +183,13 @@ const Produtos: React.FC = () => {
       {/* ... (Modais não mudam, mas note que `disabled` neles é controlado por `isSubmitting`) ... */}
       <AddProductModal
         open={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen} // Simplificado na resposta anterior
+        onOpenChange={setIsAddModalOpen}
         onSave={handleCreateProduct}
         isSubmitting={isSubmitting}
       />
       <EditProductModal
         open={isEditModalOpen}
-        onOpenChange={(open) => { // Simplificado na resposta anterior
+        onOpenChange={(open) => {
             if (isSubmitting && !open) return;
             if (!open) setProdutoEmEdicao(null);
             setIsEditModalOpen(open);
