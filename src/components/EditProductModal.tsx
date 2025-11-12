@@ -29,7 +29,7 @@ const categorias = {
 const getChaveDaDescricao = (descricao: string) => {
   // Object.entries(categorias) === [['ALIMENTICIO', 'Alimentício'], ...]
   const entry = Object.entries(categorias).find(
-    ([chave, label]) => label.toLowerCase() === descricao.toLowerCase()
+    ([label]) => label.toLowerCase() === descricao.toLowerCase()
   );
   return entry ? entry[0] : 'OUTROS'; // Retorna a chave (ex: 'ALIMENTICIO') ou 'OUTROS'
 };
