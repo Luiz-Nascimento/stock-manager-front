@@ -1,0 +1,28 @@
+.appLayout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.mainContent {
+  flex: 1; 
+  padding: 2rem;
+  overflow-y: auto;    
+  width: 100%;         
+  box-sizing: border-box; 
+}
+
+/* Media Query para telas pequenas (ex: 768px ou menos) */
+@media (max-width: 768px) {
+  .appLayout {
+    /* Muda a direção do flex para coluna (um em cima do outro) */
+    flex-direction: column;
+  }
+
+  .mainContent {
+    /* Remove o padding excessivo em telas pequenas */
+    padding: 1rem;
+    /* Garante que o conteúdo não transborde */
+    overflow-x: hidden;
+  }
+}

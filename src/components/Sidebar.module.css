@@ -95,3 +95,26 @@
 .toggleButton:hover {
   border-color: var(--color-text-tertiary);
 }
+
+@media (max-width: 768px) {
+  .sidebar {
+    /* Ocupa a largura total */
+    width: 100%; 
+    /* Altura se ajusta ao conteúdo (menu + footer) */
+    min-height: auto;
+    height: auto;
+    /* Borda na parte inferior em vez da direita */
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .menu {
+    /* Não precisa mais preencher o espaço vertical */
+    flex: 0;
+  }
+
+  .title {
+    /* Opcional: esconde o título para economizar espaço */
+    display: none;
+  }
+}

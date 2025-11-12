@@ -1,22 +1,16 @@
 // src/components/layout/AppLayout.tsx
 import { Outlet } from 'react-router-dom'
 import Sidebar from '../Sidebar'
+// 1. Importe o CSS Module
+import styles from './AppLayout.module.css' 
 
 const AppLayout = () => {
   return (
-    <div style={{ 
-      display: 'flex', 
-      minHeight: '100vh',  // ← ADICIONE
-      width: '100%'        // ← ADICIONE
-    }}>
+    // 2. Use a classe do CSS Module
+    <div className={styles.appLayout}>
       <Sidebar />
-      <main style={{ 
-        flex: 1, 
-        padding: '2rem',
-        overflowY: 'auto',     // ← ADICIONE
-        width: '100%',         // ← ADICIONE
-        boxSizing: 'border-box' // ← ADICIONE (importante!)
-      }}>
+      {/* 3. Use a classe do CSS Module */}
+      <main className={styles.mainContent}>
         <Outlet />
       </main>
     </div>
