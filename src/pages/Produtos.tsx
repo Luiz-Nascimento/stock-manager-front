@@ -1,12 +1,12 @@
 // src/pages/Produtos.tsx
-import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, PlusCircle, Loader2 } from 'lucide-react'; 
+import React, { useState, useEffect, useMemo } from 'react'; // 1. Importar useMemo
+import { Edit, Trash2, PlusCircle, Loader2, Search } from 'lucide-react'; // 2. Importar Search
 import AddProductModal from '../components/AddProductModal';
 import EditProductModal from '../components/EditProductModal';
 import api from '../lib/api';
 import styles from './Produtos.module.css';
 
-// 1. ATUALIZAR TIPOS AQUI
+// ... (Tipos Produto, NewProductData, UpdateProductData não mudam) ...
 export type Produto = {
   id: number;
   nome: string;
@@ -14,15 +14,10 @@ export type Produto = {
   preco: number;
   quantidade: number;
   validade: string;
-  categoria: string; // <-- ADICIONADO
+  categoria: string;
 };
-
-// Omit<> agora pega 'categoria' automaticamente
-export type NewProductData = Omit<Produto, 'id'>; 
-
-// Omit<> agora pega 'categoria' automaticamente
-export type UpdateProductData = Omit<Produto, 'id' | 'validade'>; 
-
+export type NewProductData = Omit<Produto, 'id'>;
+export type UpdateProductData = Omit<Produto, 'id' | 'validade'>;
 
 const Produtos: React.FC = () => {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -31,8 +26,12 @@ const Produtos: React.FC = () => {
   const [produtoEmEdicao, setProdutoEmEdicao] = useState<Produto | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
+  
+  // 3. NOVO ESTADO PARA A BUSCA
+  const [termoBusca, setTermoBusca] = useState('');
 
   useEffect(() => {
+    // ... (fetchProdutos não muda) ...
     const fetchProdutos = async () => {
       try {
         const response = await api.get('/produtos');
@@ -44,12 +43,11 @@ const Produtos: React.FC = () => {
     fetchProdutos();
   }, []);
 
-  // --- Funções de API ---
+  // ... (Funções de API não mudam) ...
   const handleCreateProduct = async (data: NewProductData) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      // O 'data' agora inclui 'categoria' vindo do modal
       const response = await api.post('/produtos', data);
       setProdutos(prev => [...prev, response.data]);
       setIsAddModalOpen(false);
@@ -59,12 +57,10 @@ const Produtos: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
   const handleUpdateProduct = async (id: number, data: UpdateProductData) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      // O 'data' agora inclui 'categoria' vindo do modal
       const response = await api.put(`/produtos/${id}`, data);
       setProdutos(prev => prev.map(p => (p.id === id ? response.data : p)));
       setIsEditModalOpen(false);
@@ -75,16 +71,13 @@ const Produtos: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  // ... (handleDeletar não muda) ...
   const handleDeletar = async (id: number) => {
     if (isSubmitting || deletingProductId !== null) return;
     if (!window.confirm("Tem certeza que deseja deletar este produto?")) {
       return;
     }
-    setIsSubmitting(true); 
-    setDeletingProductId(id); 
-
+    setIsSubmitting(true);
+    setDeletingProductId(id);
     try {
       await api.delete(`/produtos/${id}`);
       setProdutos(prev => prev.filter(p => p.id !== id));
@@ -92,11 +85,9 @@ const Produtos: React.FC = () => {
       console.error("Erro ao deletar produto:", error);
     } finally {
       setIsSubmitting(false);
-      setDeletingProductId(null); 
+      setDeletingProductId(null);
     }
   };
-
-  // ... (Funções de controle do Modal não mudam) ...
   const handleAbrirModalEdicao = (produto: Produto) => {
     if (isSubmitting || deletingProductId !== null) return;
     setProdutoEmEdicao(produto);
@@ -106,6 +97,24 @@ const Produtos: React.FC = () => {
     if (isSubmitting || deletingProductId !== null) return;
     setIsAddModalOpen(true);
   };
+
+  // 4. LÓGICA DE FILTRAGEM
+  // useMemo evita que o filtro rode a cada renderização, só quando produtos ou termoBusca mudam
+  const produtosFiltrados = useMemo(() => {
+    const buscaLower = termoBusca.toLowerCase();
+    
+    if (!buscaLower) {
+      return produtos; // Retorna todos se a busca estiver vazia
+    }
+
+    return produtos.filter(produto => {
+      return (
+        produto.nome.toLowerCase().includes(buscaLower) ||
+        produto.marca.toLowerCase().includes(buscaLower) ||
+        produto.categoria.toLowerCase().includes(buscaLower)
+      );
+    });
+  }, [produtos, termoBusca]);
 
 
   // --- Renderização ---
@@ -123,13 +132,26 @@ const Produtos: React.FC = () => {
         </button>
       </div>
 
+      {/* 5. CAMPO DE BUSCA ADICIONADO AQUI */}
+      <div className={styles.searchContainer}>
+        <Search size={18} className={styles.searchIcon} />
+        <input 
+          type="text"
+          placeholder="Buscar por nome, marca ou categoria..."
+          className={styles.searchInput}
+          value={termoBusca}
+          onChange={e => setTermoBusca(e.target.value)}
+          disabled={isSubmitting || deletingProductId !== null}
+        />
+      </div>
+
 
       <table className={styles.table}>
         <thead>
           <tr>
             <th className={styles.thStyle}>Nome</th>
             <th className={styles.thStyle}>Marca</th>
-            <th className={styles.thStyle}>Categoria</th> {/* <-- ADICIONADO */}
+            <th className={styles.thStyle}>Categoria</th>
             <th className={styles.thStyle}>Preço</th>
             <th className={styles.thStyle}>Qtd.</th>
             <th className={styles.thStyle}>Validade</th>
@@ -137,22 +159,23 @@ const Produtos: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {produtos.map((produto) => {
+          {/* 6. Mapeia os PRODUTOS FILTRADOS em vez da lista completa */}
+          {produtosFiltrados.map((produto) => {
             const isDeleting = deletingProductId === produto.id;
             return (
               <tr
                 key={produto.id}
-                style={{ opacity: isDeleting ? 0.5 : 1, transition: 'opacity 0.3s ease-out' }} 
+                style={{ opacity: isDeleting ? 0.5 : 1, transition: 'opacity 0.3s ease-out' }}
               >
                 <td className={styles.tdStyle}>{produto.nome}</td>
                 <td className={styles.tdStyle}>{produto.marca}</td>
-                <td className={styles.tdStyle}>{produto.categoria}</td> {/* <-- ADICIONADO */}
+                <td className={styles.tdStyle}>{produto.categoria}</td>
                 <td className={styles.tdStyle}>R$ {produto.preco.toFixed(2)}</td>
                 <td className={styles.tdStyle}>{produto.quantidade}</td>
                 <td className={styles.tdStyle}>{new Date(produto.validade).toLocaleDateString('pt-BR')}</td>
                 <td className={styles.tdStyle}>
                   {isDeleting ? (
-                    <Loader2 size={16} className={styles.spinner} /> 
+                    <Loader2 size={16} className={styles.spinner} />
                   ) : (
                     <>
                       <button
@@ -179,8 +202,12 @@ const Produtos: React.FC = () => {
           })}
         </tbody>
       </table>
+      
+      {/* Exibe mensagem se o filtro não retornar nada */}
+      {produtosFiltrados.length === 0 && termoBusca.length > 0 && (
+        <p className={styles.emptySearch}>Nenhum produto encontrado para "{termoBusca}".</p>
+      )}
 
-      {/* ... (Modais não mudam, mas note que `disabled` neles é controlado por `isSubmitting`) ... */}
       <AddProductModal
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}

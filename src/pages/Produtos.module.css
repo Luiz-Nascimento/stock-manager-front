@@ -63,3 +63,38 @@
   display: inline-block; /* Para centralizar melhor na célula */
   vertical-align: middle;
 }
+
+.searchContainer {
+  position: relative;
+  margin-top: 1.5rem;
+  width: 100%;
+  max-width: 400px; /* Limita o tamanho da barra de busca */
+}
+
+.searchInput {
+  /* Reutiliza o estilo dos inputs do modal */
+  padding: 0.75rem;
+  padding-left: 2.5rem; /* Espaço para o ícone */
+  font-size: 0.9rem;
+  border: 1px solid var(--color-border-heavy);
+  background-color: var(--color-background-input);
+  color: var(--color-text-primary);
+  border-radius: 6px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+  pointer-events: none; /* Permite clicar no input através do ícone */
+}
+
+.emptySearch {
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--color-text-tertiary);
+}
