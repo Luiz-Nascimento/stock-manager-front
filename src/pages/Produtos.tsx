@@ -1,6 +1,5 @@
 // src/pages/Produtos.tsx
 import React, { useState, useEffect, useMemo } from 'react';
-// 1. Importar useSearchParams
 import { useSearchParams } from 'react-router-dom'; 
 import { Edit, Trash2, PlusCircle, Loader2, Search } from 'lucide-react';
 import AddProductModal from '../components/AddProductModal';
@@ -8,19 +7,23 @@ import EditProductModal from '../components/EditProductModal';
 import api from '../lib/api';
 import styles from './Produtos.module.css';
 
-// ... (Tipos Produto não mudam) ...
+// ATUALIZAÇÃO 1: Tipagem atualizada para refletir o backend (validade opcional + garantia)
 export type Produto = {
   id: number;
   nome: string;
   marca: string;
   preco: number;
   quantidade: number;
-  validade: string;
   categoria: string;
+  // Agora opcionais e podem ser nulos
+  validade?: string | null;
+  garantiaMeses?: number | null;
 };
-export type NewProductData = Omit<Produto, 'id'>;
-export type UpdateProductData = Omit<Produto, 'id' | 'validade'>;
 
+// Removemos 'validade' do Omit para permitir o envio correto no Create
+export type NewProductData = Omit<Produto, 'id'>;
+// Atualização agora aceita tudo (exceto ID) para permitir editar a validade/garantia
+export type UpdateProductData = Omit<Produto, 'id'>;
 
 const Produtos: React.FC = () => {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -31,21 +34,16 @@ const Produtos: React.FC = () => {
   const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
   const [termoBusca, setTermoBusca] = useState('');
   
-  // 2. Hook para ler os parâmetros da URL
   const [searchParams] = useSearchParams();
-  const filtroUrl = searchParams.get('filtro'); // Pega o valor de ?filtro=...
+  const filtroUrl = searchParams.get('filtro');
 
-  // 3. Modificar o useEffect para usar o filtro
   useEffect(() => {
     const fetchProdutos = async () => {
       try {
         let url = '/produtos';
         
-        // Se um filtro veio da URL, usa o endpoint filtrado
         if (filtroUrl) {
           url = `/produtos?filtro=${filtroUrl}`;
-          // Opcional: Desabilita a busca manual se estiver vendo um filtro
-          // setTermoBusca(''); 
         }
         
         const response = await api.get(url);
@@ -56,26 +54,25 @@ const Produtos: React.FC = () => {
     };
     
     fetchProdutos();
-  }, [filtroUrl]); // 4. Adiciona filtroUrl como dependência (para re-buscar se o filtro mudar)
+  }, [filtroUrl]);
 
-  // ... (Funções de API: handleCreateProduct, handleUpdateProduct, handleDeletar não mudam) ...
   const handleCreateProduct = async (data: NewProductData) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       const response = await api.post('/produtos', data);
-      // Atualiza a lista (idealmente, deveria re-chamar fetchProdutos se estiver numa lista filtrada)
-      // Por simplicidade, apenas adicionamos
       if (!filtroUrl) {
         setProdutos(prev => [...prev, response.data]);
       }
       setIsAddModalOpen(false);
     } catch (error) {
       console.error("Erro ao salvar produto:", error);
+      alert("Erro ao salvar produto. Verifique os dados.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
   const handleUpdateProduct = async (id: number, data: UpdateProductData) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -86,10 +83,12 @@ const Produtos: React.FC = () => {
       setProdutoEmEdicao(null);
     } catch (error) {
       console.error("Erro ao ATUALIZAR produto:", error);
+      alert("Erro ao atualizar produto.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
   const handleDeletar = async (id: number) => {
     if (isSubmitting || deletingProductId !== null) return;
     if (!window.confirm("Tem certeza que deseja deletar este produto?")) {
@@ -108,23 +107,20 @@ const Produtos: React.FC = () => {
     }
   };
 
-  // ... (Funções de Modal não mudam) ...
   const handleAbrirModalEdicao = (produto: Produto) => {
     if (isSubmitting || deletingProductId !== null) return;
     setProdutoEmEdicao(produto);
     setIsEditModalOpen(true);
   };
+
   const handleAbrirModalAdicao = () => {
     if (isSubmitting || deletingProductId !== null) return;
     setIsAddModalOpen(true);
   };
 
-
-  // ... (lógica de produtosFiltrados (busca) não muda) ...
   const produtosFiltrados = useMemo(() => {
     const buscaLower = termoBusca.toLowerCase();
     
-    // Se estivermos vendo um filtro da URL, a busca manual não se aplica
     if (filtroUrl) {
       return produtos;
     }
@@ -139,10 +135,8 @@ const Produtos: React.FC = () => {
         produto.categoria.toLowerCase().includes(buscaLower)
       );
     });
-  }, [produtos, termoBusca, filtroUrl]); // Adicionado filtroUrl
+  }, [produtos, termoBusca, filtroUrl]);
 
-  
-  // 5. NOVO: Helper para mostrar um título baseado no filtro
   const getTituloPagina = () => {
     if (!filtroUrl) return "Lista de Produtos";
     switch (filtroUrl) {
@@ -154,12 +148,21 @@ const Produtos: React.FC = () => {
     }
   };
 
+  // ATUALIZAÇÃO 2: Helper para renderizar Validade ou Garantia na tabela de forma inteligente
+  const renderValidadeOuGarantia = (produto: Produto) => {
+    if (produto.validade) {
+      // Ajuste para fuso horário se necessário, ou uso simples da string se vier YYYY-MM-DD
+      return new Date(produto.validade).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+    }
+    if (produto.garantiaMeses !== null && produto.garantiaMeses !== undefined) {
+      return `${produto.garantiaMeses} meses (Garantia)`;
+    }
+    return "-";
+  };
 
-  // --- Renderização ---
   return (
     <div className={styles.pageContainer}>
       <div className={styles.headerContainer}>
-        {/* 6. Título da página agora é dinâmico */}
         <h2 className={styles.headerTitle}>{getTituloPagina()}</h2>
         
         <button
@@ -172,7 +175,6 @@ const Produtos: React.FC = () => {
         </button>
       </div>
 
-      {/* 7. Esconde a barra de busca se estivermos vendo um filtro */}
       {!filtroUrl && (
         <div className={styles.searchContainer}>
           <Search size={18} className={styles.searchIcon} />
@@ -195,12 +197,12 @@ const Produtos: React.FC = () => {
             <th className={styles.thStyle}>Categoria</th>
             <th className={styles.thStyle}>Preço</th>
             <th className={styles.thStyle}>Qtd.</th>
-            <th className={styles.thStyle}>Validade</th>
+            {/* ATUALIZAÇÃO 3: Título da coluna ajustado */}
+            <th className={styles.thStyle}>Validade / Garantia</th>
             <th className={styles.thStyle}>Ações</th>
           </tr>
         </thead>
         <tbody>
-          {/* ... (mapeamento de produtosFiltrados não muda) ... */}
           {produtosFiltrados.map((produto) => {
             const isDeleting = deletingProductId === produto.id;
             return (
@@ -213,7 +215,8 @@ const Produtos: React.FC = () => {
                 <td className={styles.tdStyle}>{produto.categoria}</td>
                 <td className={styles.tdStyle}>R$ {produto.preco.toFixed(2)}</td>
                 <td className={styles.tdStyle}>{produto.quantidade}</td>
-                <td className={styles.tdStyle}>{new Date(produto.validade).toLocaleDateString('pt-BR')}</td>
+                {/* ATUALIZAÇÃO 4: Renderização condicional da célula */}
+                <td className={styles.tdStyle}>{renderValidadeOuGarantia(produto)}</td>
                 <td className={styles.tdStyle}>
                   {isDeleting ? (
                     <Loader2 size={16} className={styles.spinner} />
@@ -244,17 +247,14 @@ const Produtos: React.FC = () => {
         </tbody>
       </table>
       
-      {/* 8. Mensagem de "lista vazia" agora considera o filtro da URL */}
       {produtosFiltrados.length === 0 && filtroUrl && (
          <p className={styles.emptySearch}>Nenhum produto encontrado para o filtro: {getTituloPagina()}.</p>
       )}
 
-      {/* Mensagem de "busca vazia" */}
       {produtosFiltrados.length === 0 && !filtroUrl && termoBusca.length > 0 && (
         <p className={styles.emptySearch}>Nenhum produto encontrado para "{termoBusca}".</p>
       )}
 
-      {/* ... (Modais não mudam) ... */}
       <AddProductModal
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}

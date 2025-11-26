@@ -11,7 +11,6 @@ interface AddProductModalProps {
   isSubmitting: boolean;
 }
 
-// NOVO: Mapeamento das categorias (Chave: ENUM, Valor: Label)
 const categorias = {
   'ALIMENTICIO': 'Alimentício',
   'BEBIDAS': 'Bebidas',
@@ -24,7 +23,6 @@ const categorias = {
   'OUTROS': 'Outros'
 };
 
-
 const AddProductModal: React.FC<AddProductModalProps> = ({ 
   open, 
   onOpenChange, 
@@ -35,34 +33,46 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   const [marca, setMarca] = useState('');
   const [preco, setPreco] = useState('');
   const [quantidade, setQuantidade] = useState('');
+  const [categoria, setCategoria] = useState('ALIMENTICIO');
+  
+  // NOVOS ESTADOS para controlar o tipo de validade
+  const [tipoValidade, setTipoValidade] = useState<'validade' | 'garantia'>('validade');
   const [validade, setValidade] = useState('');
-  const [categoria, setCategoria] = useState('ALIMENTICIO'); // <-- ADICIONADO (default 'ALIMENTICIO')
+  const [garantiaMeses, setGarantiaMeses] = useState('');
 
-  // Pega a data de hoje formatada para o input date (VALIDAÇÃO)
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    // Reseta o form quando o modal fecha
     if (!open) {
       setNome('');
       setMarca('');
       setPreco('');
       setQuantidade('');
+      setCategoria('ALIMENTICIO');
+      // Reseta os campos novos
+      setTipoValidade('validade');
       setValidade('');
-      setCategoria('ALIMENTICIO'); // <-- ADICIONADO
+      setGarantiaMeses('');
     }
   }, [open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
+    
+    // Prepara o objeto enviando null para o campo que não foi escolhido
+    const data: NewProductData = {
       nome,
       marca,
-      categoria, // <-- ADICIONADO
+      categoria,
       preco: parseFloat(preco),
       quantidade: parseInt(quantidade),
-      validade,
-    });
+      // Se escolheu validade, envia a data, senão null
+      validade: tipoValidade === 'validade' ? validade : null,
+      // Se escolheu garantia, envia o número, senão null
+      garantiaMeses: tipoValidade === 'garantia' && garantiaMeses ? parseInt(garantiaMeses) : null
+    };
+
+    onSave(data);
   };
 
   return (
@@ -90,23 +100,21 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                 onChange={e => setMarca(e.target.value)} 
                 required 
                 disabled={isSubmitting} 
-                pattern=".*[a-zA-Z].*" // VALIDAÇÃO: Impede apenas números
+                pattern=".*[a-zA-Z].*"
                 title="A marca deve conter pelo menos uma letra."
               />
             </fieldset>
 
-            {/* NOVO CAMPO DE CATEGORIA */}
             <fieldset className="Fieldset">
               <label className="Label" htmlFor="categoria">Categoria</label>
               <select 
-                className="Input" // Reutiliza a classe .Input do CSS
+                className="Input" 
                 id="categoria" 
                 value={categoria} 
                 onChange={e => setCategoria(e.target.value)} 
                 required 
                 disabled={isSubmitting}
               >
-                {/* Mapeia o objeto de categorias para as opções */}
                 {Object.entries(categorias).map(([valorEnum, label]) => (
                   <option key={valorEnum} value={valorEnum}>
                     {label}
@@ -127,7 +135,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                   onChange={e => setPreco(e.target.value)} 
                   required 
                   disabled={isSubmitting} 
-                  min="0" // VALIDAÇÃO: Impede negativos
+                  min="0" 
                 />
               </fieldset>
               <fieldset className="Fieldset" style={{ flex: 1 }}>
@@ -136,29 +144,76 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                   className="Input" 
                   id="quantidade" 
                   type="number" 
-                  step="1" // VALIDAÇÃO: Garante inteiros
+                  step="1" 
                   value={quantidade} 
                   onChange={e => setQuantidade(e.target.value)} 
                   required 
                   disabled={isSubmitting} 
-                  min="0" // VALIDAÇÃO: Impede negativos
+                  min="0" 
                 />
               </fieldset>
             </div>
             
-            <fieldset className="Fieldset">
-              <label className="Label" htmlFor="validade">Validade</label>
-              <input 
-                className="Input" 
-                id="validade" 
-                type="date" 
-                value={validade} 
-                onChange={e => setValidade(e.target.value)} 
-                required 
-                disabled={isSubmitting} 
-                min={today} // VALIDAÇÃO: Impede data passada
-              />
-            </fieldset>
+            {/* SEÇÃO NOVA: Tipo de Validade */}
+            <div style={{ border: '1px solid var(--color-border)', padding: '1rem', borderRadius: '8px', marginTop: '0.5rem' }}>
+              <label className="Label" style={{ marginBottom: '0.5rem', display: 'block' }}>Tipo de Vencimento</label>
+              
+              <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="tipoValidade" 
+                    value="validade"
+                    checked={tipoValidade === 'validade'}
+                    onChange={() => setTipoValidade('validade')}
+                    disabled={isSubmitting}
+                  />
+                  Data de Validade
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="tipoValidade" 
+                    value="garantia"
+                    checked={tipoValidade === 'garantia'}
+                    onChange={() => setTipoValidade('garantia')}
+                    disabled={isSubmitting}
+                  />
+                  Garantia
+                </label>
+              </div>
+
+              {tipoValidade === 'validade' ? (
+                <fieldset className="Fieldset">
+                  <label className="Label" htmlFor="validade">Data de Validade</label>
+                  <input 
+                    className="Input" 
+                    id="validade" 
+                    type="date" 
+                    value={validade} 
+                    onChange={e => setValidade(e.target.value)} 
+                    required 
+                    disabled={isSubmitting} 
+                    min={today} 
+                  />
+                </fieldset>
+              ) : (
+                <fieldset className="Fieldset">
+                  <label className="Label" htmlFor="garantia">Garantia (Meses)</label>
+                  <input 
+                    className="Input" 
+                    id="garantia" 
+                    type="number" 
+                    placeholder="Ex: 12"
+                    value={garantiaMeses} 
+                    onChange={e => setGarantiaMeses(e.target.value)} 
+                    required 
+                    disabled={isSubmitting} 
+                    min="0" 
+                  />
+                </fieldset>
+              )}
+            </div>
             
             <div style={{ display: 'flex', marginTop: 25, justifyContent: 'flex-end', gap: '1rem' }}>
               <Dialog.Close asChild>
