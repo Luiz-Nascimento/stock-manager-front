@@ -1,12 +1,13 @@
 // src/components/Sidebar.tsx
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Package, Moon, Sun } from 'lucide-react' // Importe Moon e Sun
-import { useTheme } from '../contexts/ThemeContext' // Importe o hook do tema
-import styles from './Sidebar.module.css' // Importe o CSS Module
+// 1. ADICIONADO: ShoppingBag
+import { LayoutDashboard, Package, Moon, Sun, ShoppingBag } from 'lucide-react' 
+import { useTheme } from '../contexts/ThemeContext' 
+import styles from './Sidebar.module.css' 
 
 const Sidebar = () => {
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme(); // Use o hook do tema
+  const { theme, toggleTheme } = useTheme(); 
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -15,7 +16,6 @@ const Sidebar = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Função para classes dinâmicas
   const getLinkClassName = (path: string) => {
     return `${styles.link} ${isActive(path) ? styles.linkActive : ''}`
   }
@@ -50,6 +50,19 @@ const Sidebar = () => {
             <span>Produtos</span>
           </Link>
         </li>
+        
+        {/* 2. ADICIONADO: Item de menu Vendas */}
+        <li>
+          <Link 
+            to="/vendas" 
+            className={getLinkClassName('/vendas')}
+          >
+            {isActive('/vendas') && <div className={styles.activeIndicator} />}
+            <ShoppingBag size={20} style={{ flexShrink: 0 }} />
+            <span>Vendas</span>
+          </Link>
+        </li>
+
       </ul>
 
       {/* Footer com o botão de toggle */}

@@ -1,0 +1,133 @@
+/* src/pages/Vendas.module.css */
+
+/* --- Reutilizando estilos básicos da página --- */
+.pageContainer {
+  color: var(--color-text-secondary);
+}
+
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.headerTitle {
+  font-size: 1.75rem;
+  color: var(--color-text-primary);
+}
+
+.addButtonStyle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #10b981; /* Verde para vendas */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* --- Tabela de Histórico --- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-background-component);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.thStyle { 
+  padding: 1rem;
+  text-align: left;
+  background-color: var(--color-background-component-alt);
+  color: var(--color-text-tertiary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tdStyle { 
+  padding: 1rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+/* --- Estilos do Carrinho (Modal) --- */
+.posContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.addItemRow {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  background: var(--color-background-component-alt);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.addButton {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cartTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.cartHeader {
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cartRow td {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--color-border);
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.emptyCart {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
