@@ -1,37 +1,24 @@
 // src/pages/Vendas.tsx
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Calendar, DollarSign, Layers } from 'lucide-react';
+import { ShoppingBag, Calendar, DollarSign, Layers, Eye } from 'lucide-react';
 import api from '../lib/api';
 import styles from './Vendas.module.css';
 import NewSaleModal from '../components/NewSaleModal';
-
-// Tipos baseados no Backend
-type ItemVenda = {
-  id: number;
-  idProduto: number;
-  quantidade: number;
-  precoUnitario: number;
-  precoTotal: number;
-};
-
-type Pedido = {
-  id: number;
-  dataPedido: string; // Vem como string do backend (formatada ou ISO)
-  valorTotal: number;
-  quantidadeTotalItens: number;
-  vendas: ItemVenda[]; // Lista de itens dentro do pedido
-};
+import SaleDetailsModal from '../components/SaleDetailsModal.tsx';
+// IMPORTAÇÃO NOVA (Do arquivo de tipos)
+import type { Pedido } from '../types'; 
 
 const Vendas: React.FC = () => {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [isNewSaleModalOpen, setIsNewSaleModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchVendas = async () => {
     try {
       setLoading(true);
       const response = await api.get('/pedidos');
-      // Ordenar do mais recente para o mais antigo
       const sorted = response.data.sort((a: Pedido, b: Pedido) => b.id - a.id);
       setPedidos(sorted);
     } catch (error) {
@@ -44,6 +31,11 @@ const Vendas: React.FC = () => {
   useEffect(() => {
     fetchVendas();
   }, []);
+
+  const handleOpenDetails = (pedido: Pedido) => {
+    setSelectedPedido(pedido);
+    setIsDetailsModalOpen(true);
+  };
 
   return (
     <div className={styles.pageContainer}>
@@ -68,7 +60,7 @@ const Vendas: React.FC = () => {
               <th className={styles.thStyle}><Calendar size={14} style={{marginRight: 5}}/> Data</th>
               <th className={styles.thStyle}><Layers size={14} style={{marginRight: 5}}/> Itens</th>
               <th className={styles.thStyle}><DollarSign size={14} style={{marginRight: 5}}/> Total</th>
-              <th className={styles.thStyle}>Detalhes</th>
+              <th className={styles.thStyle} style={{textAlign: 'center'}}>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -80,10 +72,14 @@ const Vendas: React.FC = () => {
                 <td className={styles.tdStyle} style={{ fontWeight: 'bold', color: '#10b981' }}>
                   R$ {pedido.valorTotal.toFixed(2)}
                 </td>
-                <td className={styles.tdStyle}>
-                  <small style={{ color: '#888' }}>
-                    {pedido.vendas.length} produtos diferentes
-                  </small>
+                <td className={styles.tdStyle} style={{ textAlign: 'center' }}>
+                  <button 
+                    onClick={() => handleOpenDetails(pedido)}
+                    className="Button secondary"
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'inline-flex', gap: '5px', alignItems: 'center' }}
+                  >
+                    <Eye size={16} /> Detalhes
+                  </button>
                 </td>
               </tr>
             ))}
@@ -101,7 +97,13 @@ const Vendas: React.FC = () => {
       <NewSaleModal 
         open={isNewSaleModalOpen} 
         onOpenChange={setIsNewSaleModalOpen} 
-        onSaleSuccess={fetchVendas} // Recarrega a tabela após vender
+        onSaleSuccess={fetchVendas} 
+      />
+
+      <SaleDetailsModal
+        open={isDetailsModalOpen}
+        onOpenChange={setIsDetailsModalOpen}
+        pedido={selectedPedido}
       />
     </div>
   );
